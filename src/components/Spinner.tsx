@@ -1,17 +1,29 @@
-import { styleText } from "node:util";
-import { identifierToKeywordKind } from "typescript";
+import { type FC, type CSSProperties } from "react";
 
-export function Spinner({ size = 24, color = "#60a5fa" }) {
+interface SpinnerProps {
+  size?: number;
+  color?: string;
+}
+
+export const Spinner: FC<SpinnerProps> = ({ size = 24, color = "#60a5fa" }) => {
+  const spinnerStyle: CSSProperties = {
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center"
+  };
+
+  const svgStyle: CSSProperties = {
+    animation: "spin 1s linear infinite"
+  };
+
   return (
-    <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
+    <div style={spinnerStyle}>
       <svg
         width={size}
         height={size}
         viewBox="0 0 24 24"
         fill="none"
-        style={{
-          animation: "spin 1s linear infinite"
-        }}
+        style={svgStyle}
       >
         <style>
           {`
@@ -45,4 +57,4 @@ export function Spinner({ size = 24, color = "#60a5fa" }) {
       </svg>
     </div>
   );
-}
+};

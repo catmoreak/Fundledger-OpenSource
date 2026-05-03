@@ -1,6 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, type FC } from "react";
 
-export function Toast({ id, message, type = "success", onRemove, duration = 3000 }) {
+interface ToastProps {
+  id: number;
+  message: string;
+  type?: "success" | "error";
+  onRemove: (id: number) => void;
+  duration?: number;
+}
+
+export const Toast: FC<ToastProps> = ({ id, message, type = "success", onRemove, duration = 3000 }) => {
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
@@ -89,9 +97,14 @@ export function Toast({ id, message, type = "success", onRemove, duration = 3000
       />
     </div>
   );
+};
+
+interface ToastContainerProps {
+  toasts: Array<{ id: number; message: string; type: string; duration: number }>;
+  onRemove: (id: number) => void;
 }
 
-export function ToastContainer({ toasts, onRemove }) {
+export const ToastContainer: FC<ToastContainerProps> = ({ toasts, onRemove }) => {
   return (
     <div>
       {toasts.map((toast) => (
@@ -99,24 +112,11 @@ export function ToastContainer({ toasts, onRemove }) {
           key={toast.id}
           id={toast.id}
           message={toast.message}
-          type={toast.type}
+          type={toast.type as "success" | "error"}
           onRemove={onRemove}
-          duration={toast.duration || 3000}
+          duration={toast.duration}
         />
       ))}
-
-      <style>{`
-        @keyframes slideIn {
-          from {
-            transform: translateX(400px);
-            opacity: 0;
-          }
-          to {
-            transform: translateX(0);
-            opacity: 1;
-          }
-        }
-      `}</style>
     </div>
   );
-}
+};
