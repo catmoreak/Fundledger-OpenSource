@@ -1,5 +1,5 @@
 import { useState, type FC, type CSSProperties } from "react";
-import { supabase } from "../../supabaseClient";
+import { supabase } from "../../../supabase";
 import { useNavigate, Link } from "react-router-dom";
 import { useToast } from "../../context/ToastContext";
 import { colors, spacing, borderRadius } from "../../styles/theme";
@@ -84,7 +84,7 @@ const Login: FC = () => {
       <div style={formCard}>
       
         <div style={logoContainer}>
-          <img src="/logo2.png" alt="FundLedger Logo" style={{ width: 48, height: 48, borderRadius: 12, objectFit: "cover" }} />
+          <img src="/logo.png" alt="FundLedger Logo" style={{ width: 50, height: 65, borderRadius: 12, objectFit: "cover" }} />
           <span style={logoText}>FundLedger</span>
         </div>
 
@@ -112,7 +112,7 @@ const Login: FC = () => {
               </svg>
               <input
                 type="email"
-                placeholder="you@example.com"
+                placeholder="your email here"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 style={inputStyle}
