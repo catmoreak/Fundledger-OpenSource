@@ -3,6 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import Login from './pages/auth/Login'
 import Signup from './pages/auth/Signup'
 import { ToastProvider, useToast } from './context/ToastContext'
+import { AuthProvider } from './context/AuthContext'
 import { ToastContainer } from './components/Toast'
 
 function AppContent() {
@@ -24,9 +25,11 @@ function AppContent() {
 
 function App() {
   return (
-    <ToastProvider>
-      <AppContent />
-    </ToastProvider>
+    <AuthProvider>
+      <ToastProvider>
+        <AppContent />
+      </ToastProvider>
+    </AuthProvider>
   )
 }
 export default App
