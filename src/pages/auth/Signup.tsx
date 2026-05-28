@@ -6,12 +6,6 @@ import { useToast } from "../../context/ToastContext";
 import { colors, spacing, borderRadius } from "../../styles/theme";
 import { Eye, EyeOff } from "lucide-react";
 
-interface SignupFormData {
-  name: string;
-  email: string;
-  password: string;
-}
-
 const Signup: React.FC = () => {
   const [name, setName] = useState<string>("");
   const [email, setEmail] = useState<string>("");
@@ -67,6 +61,10 @@ const Signup: React.FC = () => {
         email: email.trim(),
         role: "user"
       }]);
+
+      if (profileError) {
+        console.error("Profile creation error:", profileError);
+      }
 
       if (data.session) {
         addToast("Account created successfully!", "success");
@@ -283,16 +281,6 @@ const logoContainer: React.CSSProperties = {
   marginBottom: spacing.lg,
 };
 
-const logoIcon: React.CSSProperties = {
-  width: "44px",
-  height: "44px",
-  borderRadius: borderRadius.md,
-  background: `linear-gradient(135deg, ${colors.accentGreen}, ${colors.accentBlue})`,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color: "#fff",
-};
 
 const logoText: React.CSSProperties = {
   fontSize: "24px",
