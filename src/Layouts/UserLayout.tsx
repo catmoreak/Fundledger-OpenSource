@@ -1,7 +1,7 @@
 import React, { type CSSProperties } from "react";
 import UserSidebar from "../components/UserSidebar";
 import Topbar from "../components/Topbar";
-import { colors, spacing } from "../styles/theme";
+import { colors } from "../styles/theme";
 
 interface UserLayoutProps {
   children: React.ReactNode;

@@ -120,23 +120,6 @@ const headerSection: CSSProperties = {
   marginBottom: spacing.xl,
 };
 
-const headerIcon: CSSProperties = {
-  width: "48px",
-  height: "48px",
-  borderRadius: borderRadius.md,
-  background: `linear-gradient(135deg, ${colors.accentBlue}20, ${colors.accentPurple}20)`,
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  color: colors.accentBlue,
-};
-
-const pageTitle: CSSProperties = {
-  fontSize: "28px",
-  fontWeight: 700,
-  color: colors.textPrimary,
-  margin: 0,
-};
 
 const pageSubtitle: CSSProperties = {
   fontSize: "14px",
