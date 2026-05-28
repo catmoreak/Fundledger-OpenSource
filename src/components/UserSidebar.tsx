@@ -100,7 +100,7 @@ function UserSidebar() {
           alignItems: "center",
           gap: "12px"
         }}>
-          <img src="/logo2.png" alt="FundLedger Logo" style={{ width: 40, height: 40, borderRadius: borderRadius.md, objectFit: "cover" }} />
+          <img src="/logo.png" alt="FundLedger Logo" style={{ width: 40, height: 40, borderRadius: borderRadius.md, objectFit: "cover" }} />
           <div>
             <h2 style={{ fontSize: "18px", fontWeight: 700, margin: 0, letterSpacing: -1 }}>FundLedger</h2>
           </div>
