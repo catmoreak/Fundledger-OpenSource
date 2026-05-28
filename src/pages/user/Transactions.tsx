@@ -284,12 +284,6 @@ const cardStyle = {
   padding: "8px 20px"
 };
 
-const theadStyle = {
-  color: colors.textMuted,
-  textAlign: "left",
-  borderBottom: `1px solid ${colors.border}`
-};
-
 const th = {
   padding: "16px 0",
   fontWeight: 500,
