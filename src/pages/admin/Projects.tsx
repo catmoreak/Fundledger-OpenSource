@@ -1,0 +1,524 @@
+import { useEffect, useState, type CSSProperties } from "react";
+import AdminLayout from "../../Layouts/AdminLayout";
+import { supabase } from "../../../supabase";
+import { Spinner } from "../../components/Spinner";
+import { useToast } from "../../context/ToastContext";
+import { colors, spacing, borderRadius, cardStyle as themeCard, inputStyle as themeInput, buttonPrimary, buttonSecondary } from "../../styles/theme";
+
+interface Project {
+    id: string | number;
+    title: string;
+    description?: string | null;
+    created_at: string;
+    created_by?: string | null;
+}
+
+function Projects(): JSX.Element {
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [submitting, setSubmitting] = useState<boolean>(false);
+    const [showForm, setShowForm] = useState<boolean>(false);
+    const [editingId, setEditingId] = useState<string | number | null>(null);
+
+   
+    const [confirmDeleteOpen, setConfirmDeleteOpen] = useState<boolean>(false);
+    const [deleteTargetId, setDeleteTargetId] = useState<string | number | null>(null);
+    const [deleteMsg, setDeleteMsg] = useState<string>("");
+
+    const { addToast } = useToast();
+
+    const [form, setForm] = useState({
+        title: "",
+        description: ""
+    });
+
+    useEffect(() => {
+        fetchProjects();
+    }, []);
+
+    const fetchProjects = async () => {
+        const startTime = Date.now();
+        try {
+            setLoading(true);
+            const { data, error } = await supabase
+                .from("projects")
+                .select("*")
+                .order("created_at", { ascending: false });
+
+            if (error) throw error;
+            setProjects(data || []);
+        } catch (err) {
+           
+        } finally {
+           
+            const elapsed = Date.now() - startTime;
+            const remaining = Math.max(0, 3000 - elapsed);
+            setTimeout(() => {
+                setLoading(false);
+            }, remaining);
+        }
+    };
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setForm({ ...form, [e.target.name]: e.target.value });
+    };
+
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+
+        if (!form.title.trim()) {
+            addToast("Please enter project title", "error");
+            return;
+        }
+
+        try {
+            setSubmitting(true);
+
+           
+            const { data: { user } } = await supabase.auth.getUser();
+
+            if (editingId) {
+                
+                const { error } = await supabase
+                    .from("projects")
+                    .update({ title: form.title, description: form.description })
+                    .eq("id", editingId);
+
+                if (error) throw error;
+                addToast("Project updated successfully!", "success");
+            } else {
+               
+                const { error } = await supabase.from("projects").insert([{
+                    title: form.title,
+                    description: form.description,
+                    created_by: user?.id
+                }]);
+
+                if (error) throw error;
+                addToast("Project created successfully!", "success");
+            }
+
+            setForm({ title: "", description: "" });
+            setShowForm(false);
+            setEditingId(null);
+            fetchProjects();
+        } catch (err) {
+            addToast("Failed to save project", "error");
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleEdit = (project: Project) => {
+        setForm({ title: project.title, description: project.description || "" });
+        setEditingId(project.id);
+        setShowForm(true);
+    };
+
+   
+    const handleDelete = (id: string | number, title?: string | null) => {
+        setDeleteTargetId(id);
+        setDeleteMsg(title ? `Delete project "${title}"?` : "Delete this project?");
+        setConfirmDeleteOpen(true);
+    };
+
+  
+    const performDelete = async () => {
+        const id = deleteTargetId;
+        setConfirmDeleteOpen(false);
+        try {
+            const { error } = await supabase.from("projects").delete().eq("id", id);
+            if (error) throw error;
+            addToast("Project deleted", "success");
+            fetchProjects();
+        } catch (err) {
+            addToast("Failed to delete project", "error");
+        } finally {
+            setDeleteTargetId(null);
+            setDeleteMsg("");
+        }
+    };
+
+    const cancelEdit = () => {
+        setForm({ title: "", description: "" });
+        setEditingId(null);
+        setShowForm(false);
+    };
+
+    return (
+        <AdminLayout>
+          
+            <div style={headerContainer}>
+                <div style={headerSection}>
+                    <div>
+                        <h1 style={pageTitle}>Projects</h1>
+                        <p style={pageSubtitle}>Manage funded projects and initiatives</p>
+                    </div>
+                </div>
+                <button onClick={() => { setShowForm(!showForm); if (showForm) cancelEdit(); }} style={primaryBtn}>
+                    {showForm ? "Cancel" : "+ Add Project"}
+                </button>
+            </div>
+
+           
+            {confirmDeleteOpen && (
+                <div style={confirmOverlay} onClick={() => setConfirmDeleteOpen(false)}>
+                    <div style={confirmBox} onClick={(e) => e.stopPropagation()}>
+                        <h3 style={confirmTitle}>Confirm Delete</h3>
+                        <p style={confirmMsgStyle}>{deleteMsg}</p>
+                        <div style={confirmActions}>
+                            <button style={confirmCancelBtn} onClick={() => setConfirmDeleteOpen(false)}>Cancel</button>
+                            <button style={confirmPrimaryBtn} onClick={performDelete}>Delete</button>
+                        </div>
+                    </div>
+                </div>
+            )}
+            {showForm && (
+                <div style={{ ...themeCard, marginBottom: spacing.lg }}>
+                    <h3 style={formTitle}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                        </svg>
+                        {editingId ? "Edit Project" : "New Project"}
+                    </h3>
+                    <form onSubmit={handleSubmit}>
+                        <div style={formGroup}>
+                            <label style={labelStyle}>Project Title <span style={requiredStar}>*</span></label>
+                            <input
+                                name="title"
+                                placeholder="E.g., Community Workshop Series"
+                                value={form.title}
+                                onChange={handleChange}
+                                style={inputStyle}
+                            />
+                        </div>
+                        <div style={formGroup}>
+                            <label style={labelStyle}>Description</label>
+                            <textarea
+                                name="description"
+                                placeholder="Describe the project goals and progress..."
+                                value={form.description}
+                                onChange={handleChange}
+                                rows={3}
+                                style={{ ...inputStyle, resize: "vertical" }}
+                            />
+                        </div>
+                        <div style={formActions}>
+                            {editingId && (
+                                <button type="button" onClick={cancelEdit} style={secondaryBtn}>
+                                    Cancel Edit
+                                </button>
+                            )}
+                            <button type="submit" disabled={submitting} style={{ ...primaryBtn, opacity: submitting ? 0.7 : 1 }}>
+                                {submitting ? "Saving..." : editingId ? "Update Project" : "Create Project"}
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            )}
+
+           
+            <div>
+                {loading ? (
+                    <Spinner />
+                ) : projects.length === 0 ? (
+                    <div style={emptyState}>
+                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={colors.textMuted} strokeWidth="1.5">
+                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                        </svg>
+                        <p style={emptyTitle}>No projects yet</p>
+                        <p style={emptySubtitle}>Create your first project above</p>
+                    </div>
+                ) : (
+                    <div style={projectsGrid}>
+                        {projects.map(project => (
+                            <div key={project.id} style={projectCard}>
+                                <div style={projectHeader}>
+                                    <div style={projectIcon}>
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
+                                        </svg>
+                                    </div>
+                                    <h3 style={projectTitle}>{project.title}</h3>
+                                </div>
+                                <p style={projectDescription}>{project.description || "No description provided"}</p>
+                                <div style={projectMeta}>
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                        <line x1="16" y1="2" x2="16" y2="6" />
+                                        <line x1="8" y1="2" x2="8" y2="6" />
+                                        <line x1="3" y1="10" x2="21" y2="10" />
+                                    </svg>
+                                    Created {new Date(project.created_at).toLocaleDateString("en-US", {
+                                        year: "numeric",
+                                        month: "short",
+                                        day: "numeric"
+                                    })}
+                                </div>
+                                <div style={projectActions}>
+                                    <button onClick={() => handleEdit(project)} style={editBtn}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                                            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                                        </svg>
+                                        Edit
+                                    </button>
+                                    <button onClick={() => handleDelete(project.id, project.title)} style={deleteBtn}>
+                                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                            <polyline points="3 6 5 6 21 6" />
+                                            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
+                                        </svg>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+            </div>
+        </AdminLayout>
+    );
+}
+
+const headerContainer: CSSProperties = {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: spacing.lg,
+};
+
+const headerSection: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: spacing.md,
+};
+
+const pageTitle: CSSProperties = {
+    fontSize: "28px",
+    fontWeight: 700,
+    color: colors.textPrimary,
+    margin: 0,
+};
+
+const pageSubtitle: CSSProperties = {
+    fontSize: "14px",
+    color: colors.textMuted,
+    margin: 0,
+    marginTop: "4px",
+};
+
+const primaryBtn: CSSProperties = {
+    ...buttonPrimary,
+};
+
+const secondaryBtn: CSSProperties = {
+    ...buttonSecondary,
+};
+
+const formTitle: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: spacing.sm,
+    fontSize: "18px",
+    fontWeight: 600,
+    color: colors.textPrimary,
+    marginBottom: spacing.lg,
+};
+
+const formGroup: CSSProperties = {
+    marginBottom: spacing.md,
+};
+
+const labelStyle: CSSProperties = {
+    display: "block",
+    fontSize: "13px",
+    fontWeight: 500,
+    color: colors.textSecondary,
+    marginBottom: spacing.xs,
+    textTransform: "uppercase",
+    letterSpacing: "0.5px",
+};
+
+const requiredStar: CSSProperties = {
+    color: colors.accentRed,
+};
+
+const inputStyle: CSSProperties = {
+    ...themeInput,
+    width: "100%",
+    boxSizing: "border-box",
+};
+
+const formActions: CSSProperties = {
+    display: "flex",
+    gap: spacing.md,
+    marginTop: spacing.md,
+};
+
+const projectsGrid: CSSProperties = {
+    display: "grid",
+    gridTemplateColumns: "repeat(auto-fill, minmax(320px, 1fr))",
+    gap: spacing.md,
+};
+
+const projectCard: CSSProperties = {
+    ...themeCard,
+    display: "flex",
+    flexDirection: "column",
+};
+
+const projectHeader: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: spacing.sm,
+    marginBottom: spacing.sm,
+};
+
+const projectIcon: CSSProperties = {
+    width: "32px",
+    height: "32px",
+    borderRadius: borderRadius.sm,
+    background: `${colors.accentPurple}15`,
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: colors.accentPurple,
+};
+
+const projectTitle: CSSProperties = {
+    fontSize: "16px",
+    fontWeight: 600,
+    color: colors.textPrimary,
+    margin: 0,
+};
+
+const projectDescription: CSSProperties = {
+    fontSize: "14px",
+    color: colors.textSecondary,
+    lineHeight: 1.5,
+    margin: 0,
+    flex: 1,
+};
+
+const projectMeta: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: spacing.xs,
+    fontSize: "13px",
+    color: colors.textMuted,
+    marginTop: spacing.md,
+    paddingTop: spacing.md,
+    borderTop: `1px solid ${colors.border}`,
+};
+
+const projectActions: CSSProperties = {
+    display: "flex",
+    gap: spacing.sm,
+    marginTop: spacing.md,
+};
+
+const editBtn: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: spacing.xs,
+    background: `${colors.accentBlue}15`,
+    color: colors.accentBlue,
+    border: "none",
+    padding: `${spacing.sm} ${spacing.md}`,
+    borderRadius: borderRadius.sm,
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: 500,
+};
+
+const deleteBtn: CSSProperties = {
+    display: "flex",
+    alignItems: "center",
+    gap: spacing.xs,
+    background: `${colors.accentRed}15`,
+    color: colors.accentRed,
+    border: "none",
+    padding: `${spacing.sm} ${spacing.md}`,
+    borderRadius: borderRadius.sm,
+    cursor: "pointer",
+    fontSize: "13px",
+    fontWeight: 500,
+};
+
+const emptyState: CSSProperties = {
+    ...themeCard,
+    textAlign: "center",
+    padding: spacing.xxl,
+};
+
+const emptyTitle: CSSProperties = {
+    fontSize: "18px",
+    fontWeight: 600,
+    color: colors.textSecondary,
+    marginTop: spacing.md,
+};
+
+const emptySubtitle: CSSProperties = {
+    fontSize: "14px",
+    color: colors.textMuted,
+    marginTop: spacing.xs,
+};
+
+
+const confirmOverlay: CSSProperties = {
+    position: "fixed",
+    inset: 0,
+    background: "rgba(0,0,0,0.6)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    zIndex: 1100,
+};
+
+const confirmBox: CSSProperties = {
+    ...themeCard,
+    maxWidth: 520,
+    width: "100%",
+    padding: spacing.lg,
+    textAlign: "left",
+};
+
+const confirmTitle: CSSProperties = {
+    fontSize: "18px",
+    fontWeight: 700,
+    margin: 0,
+    marginBottom: spacing.sm,
+};
+
+const confirmMsgStyle: CSSProperties = {
+    fontSize: "14px",
+    color: colors.textSecondary,
+    marginBottom: spacing.md,
+};
+
+const confirmActions: CSSProperties = {
+    display: "flex",
+    gap: spacing.sm,
+    justifyContent: "flex-end",
+};
+
+const confirmPrimaryBtn: CSSProperties = {
+    background: colors.accentRed,
+    color: "#fff",
+    border: "none",
+    padding: `${spacing.sm} ${spacing.md}`,
+    borderRadius: borderRadius.md,
+    cursor: "pointer",
+    fontWeight: 600,
+};
+
+const confirmCancelBtn: CSSProperties = {
+    background: "transparent",
+    color: colors.textSecondary,
+    border: `1px solid ${colors.border}`,
+    padding: `${spacing.sm} ${spacing.md}`,
+    borderRadius: borderRadius.md,
+    cursor: "pointer",
+};
+
+export default Projects;
