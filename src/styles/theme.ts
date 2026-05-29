@@ -98,4 +98,17 @@ export const tableStyles = {
     padding: "12px 0",
     borderBottom: `1px solid ${colors.border}`,
   },
+  row: {
+    borderBottom: `1px solid ${colors.border}`,
+  },
+  cell: {
+    padding: "12px 0",
+    fontSize: "14px",
+    color: colors.textPrimary,
+  },
+  cellMuted: {
+    padding: "12px 0",
+    fontSize: "14px",
+    color: colors.textMuted,
+  },
 } as const;
