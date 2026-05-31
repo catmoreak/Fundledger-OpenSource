@@ -1,5 +1,5 @@
 import React, { type CSSProperties } from "react";
-import UserSidebar from "../components/UserSidebar";
+import AdminSidebar from "../components/AdminSidebar";
 import Topbar from "../components/Topbar";
 import { colors } from "../styles/theme";
 
@@ -8,15 +8,15 @@ interface AdminLayoutProps {
 }
 const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
   return (
-    <div style={layoutContainer}>
-      <UserSidebar />
+    < div style={layoutContainer} >
+      <AdminSidebar />
       <div style={mainContent}>
         <Topbar />
         <main style={contentArea}>
           {children}
         </main>
       </div>
-    </div>
+    </div >
   );
 };
 
