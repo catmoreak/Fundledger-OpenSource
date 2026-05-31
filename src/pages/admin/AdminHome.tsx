@@ -48,31 +48,31 @@ function AdminHome(): JSX.Element {
 
   const fetchDashboardData = async (): Promise<void> => {
     try {
-     
+
       const { data: txnData } = await supabase
         .from("transactions")
         .select("id, txn_id, title, description, amount, type, created_at")
         .order("created_at", { ascending: false });
 
-     
+
       let balance = 0;
       (txnData || []).forEach(txn => {
         if (txn.type === "credit") balance += Number(txn.amount);
         if (txn.type === "debit") balance -= Number(txn.amount);
       });
 
-    
+
       const { count: pendingCount } = await supabase
         .from("grant_requests")
         .select("*", { count: "exact", head: true })
         .eq("status", "pending");
 
-     
+
       const { count: projectsCount } = await supabase
         .from("projects")
         .select("*", { count: "exact", head: true });
 
-     
+
       const { count: announcementsCount } = await supabase
         .from("announcements")
         .select("*", { count: "exact", head: true });
@@ -120,7 +120,7 @@ function AdminHome(): JSX.Element {
 
   return (
     <AdminLayout>
-   
+
       <div style={headerSection}>
         <div>
           <h1 style={pageTitle}>Admin Dashboard</h1>
@@ -132,7 +132,7 @@ function AdminHome(): JSX.Element {
         <p style={muted}>Loading dashboard...</p>
       ) : (
         <>
-       
+
           <div style={statsGrid}>
             <div style={statCard}>
               <div style={statHeader}>
@@ -163,8 +163,8 @@ function AdminHome(): JSX.Element {
               <div style={statHeader}>
                 <span style={statIcon}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={stats.pendingGrants > 0 ? colors.accentYellow : colors.textMuted} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <circle cx="12" cy="12" r="10"/>
-                    <polyline points="12 6 12 12 16 14"/>
+                    <circle cx="12" cy="12" r="10" />
+                    <polyline points="12 6 12 12 16 14" />
                   </svg>
                 </span>
                 <span style={statLabel}>Pending Grants</span>
@@ -178,7 +178,7 @@ function AdminHome(): JSX.Element {
               <div style={statHeader}>
                 <span style={statIcon}>
                   <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={colors.accentPurple} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                   </svg>
                 </span>
                 <span style={statLabel}>Projects</span>
@@ -187,15 +187,15 @@ function AdminHome(): JSX.Element {
             </div>
           </div>
 
-       
+
           <div style={actionsSection}>
             <h3 style={sectionTitle}>Quick Actions</h3>
             <div style={actionsGrid}>
               <Link to="/admin/transactions" style={actionCard}>
                 <div style={{ ...actionIcon, background: `${colors.accentGreen}15`, color: colors.accentGreen }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <line x1="12" y1="5" x2="12" y2="19"/>
-                    <line x1="5" y1="12" x2="19" y2="12"/>
+                    <line x1="12" y1="5" x2="12" y2="19" />
+                    <line x1="5" y1="12" x2="19" y2="12" />
                   </svg>
                 </div>
                 <span>Add Transaction</span>
@@ -203,8 +203,8 @@ function AdminHome(): JSX.Element {
               <Link to="/admin/announcements" style={actionCard}>
                 <div style={{ ...actionIcon, background: `${colors.accentBlue}15`, color: colors.accentBlue }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" />
                   </svg>
                 </div>
                 <span>Post Announcement</span>
@@ -212,7 +212,7 @@ function AdminHome(): JSX.Element {
               <Link to="/admin/projects" style={actionCard}>
                 <div style={{ ...actionIcon, background: `${colors.accentPurple}15`, color: colors.accentPurple }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+                    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z" />
                   </svg>
                 </div>
                 <span>Create Project</span>
@@ -224,9 +224,9 @@ function AdminHome(): JSX.Element {
               }}>
                 <div style={{ ...actionIcon, background: `${colors.accentYellow}15`, color: colors.accentYellow }}>
                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <circle cx="12" cy="12" r="10"/>
-                    <line x1="12" y1="8" x2="12" y2="12"/>
-                    <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    <circle cx="12" cy="12" r="10" />
+                    <line x1="12" y1="8" x2="12" y2="12" />
+                    <line x1="12" y1="16" x2="12.01" y2="16" />
                   </svg>
                 </div>
                 <span>Review Grants ({stats.pendingGrants})</span>
@@ -234,7 +234,7 @@ function AdminHome(): JSX.Element {
             </div>
           </div>
 
-        
+
           <div style={themeCard}>
             <div style={tableHeader}>
               <h3 style={{ ...sectionTitle, marginBottom: 0 }}>Recent Transactions</h3>
@@ -303,14 +303,14 @@ function AdminHome(): JSX.Element {
         </>
       )}
 
-     
+
       {qrModal.open && (
         <div style={modalOverlay} onClick={closeQrModal}>
           <div style={modalContent} onClick={e => e.stopPropagation()}>
             <button onClick={closeQrModal} style={closeBtn} aria-label="Close QR modal">
               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <line x1="18" y1="6" x2="6" y2="18"/>
-                <line x1="6" y1="6" x2="18" y2="18"/>
+                <line x1="18" y1="6" x2="6" y2="18" />
+                <line x1="6" y1="6" x2="18" y2="18" />
               </svg>
             </button>
             <img src={qrModal.qrImage} alt="Transaction QR" style={qrImage} />

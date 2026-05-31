@@ -11,7 +11,7 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     < div style={layoutContainer} >
       <AdminSidebar />
       <div style={mainContent}>
-        <Topbar />
+        <Topbar isAdmin={true} />
         <main style={contentArea}>
           {children}
         </main>
@@ -19,7 +19,6 @@ const AdminLayout: React.FC<AdminLayoutProps> = ({ children }) => {
     </div >
   );
 };
-
 const layoutContainer: CSSProperties = {
   display: "flex",
   minHeight: "100vh",

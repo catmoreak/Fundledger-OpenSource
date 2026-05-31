@@ -13,33 +13,16 @@ interface Txn {
   type?: "credit" | "debit" | string | null;
   created_at?: string | null;
 }
-
 function QRScanner(): JSX.Element {
   const [txn, setTxn] = useState<Txn | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState<boolean>(true);
-
-  useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      "qr-reader",
-      { fps: 10, qrbox: 250 },
-      false
-    );
-
-    scanner.render(onScanSuccess, onScanError);
-
-    return () => {
-      scanner.clear().catch(() => {});
-    };
-  }, []);
 
   const onScanSuccess = async (decodedText: string): Promise<void> => {
     try {
       setError(null);
       setTxn(null);
       setScanning(false);
-
-    
       let txnData: any = null;
       try {
         txnData = JSON.parse(decodedText);
@@ -88,9 +71,21 @@ function QRScanner(): JSX.Element {
     }
   };
 
-  const onScanError = (_errorMessage?: string): void => {
-  
-  };
+  const onScanError = (_errorMessage?: string): void => {};
+
+  useEffect(() => {
+    const scanner = new Html5QrcodeScanner(
+      "qr-reader",
+      { fps: 10, qrbox: 250 },
+      false
+    );
+
+    scanner.render(onScanSuccess, onScanError);
+
+    return () => {
+      scanner.clear().catch(() => {});
+    };
+  }, []);
 
   return (
     <UserLayout>

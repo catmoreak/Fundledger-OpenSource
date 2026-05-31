@@ -14,25 +14,10 @@ interface Transaction {
   type: "credit" | "debit" | string;
   created_at: string;
 }
-
 function AdminQRScanner(): JSX.Element {
   const [txn, setTxn] = useState<Transaction | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [scanning, setScanning] = useState<boolean>(true);
-
-  useEffect(() => {
-    const scanner = new Html5QrcodeScanner(
-      "admin-qr-reader",
-      { fps: 10, qrbox: 250 },
-      false
-    );
-
-    scanner.render(onScanSuccess, onScanError);
-
-    return () => {
-      scanner.clear().catch(() => {});
-    };
-  }, []);
 
   const onScanSuccess = async (decodedText: string): Promise<void> => {
     try {
@@ -40,12 +25,10 @@ function AdminQRScanner(): JSX.Element {
       setTxn(null);
       setScanning(false);
 
-      
       let txnData: { txn_id?: string } | null;
       try {
         txnData = JSON.parse(decodedText);
       } catch {
-       
         txnData = null;
       }
 
@@ -62,7 +45,6 @@ function AdminQRScanner(): JSX.Element {
         return;
       }
 
-      
       const payload = JSON.stringify({
         txn_id: data.txn_id,
         title: data.title,
@@ -73,14 +55,26 @@ function AdminQRScanner(): JSX.Element {
       });
       await QRCode.toDataURL(payload, { width: 200, margin: 2, color: { dark: "#000", light: "#fff" } });
       setTxn(data as Transaction);
-    } catch (err) {
+    } catch {
       setError("Failed to read QR data");
     }
   };
 
-  const onScanError = (): void => {
-   
-  };
+  const onScanError = (): void => {};
+
+  useEffect(() => {
+    const scanner = new Html5QrcodeScanner(
+      "admin-qr-reader",
+      { fps: 10, qrbox: 250 },
+      false
+    );
+
+    scanner.render(onScanSuccess, onScanError);
+
+    return () => {
+      scanner.clear().catch(() => {});
+    };
+  }, []);
 
   return (
     <AdminLayout>
