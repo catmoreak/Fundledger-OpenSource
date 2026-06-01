@@ -47,8 +47,8 @@ function Projects(): JSX.Element {
 
             if (error) throw error;
             setProjects(data || []);
-        } catch (err) {
-           
+        } catch {
+            // Ignore error
         } finally {
            
             const elapsed = Date.now() - startTime;
@@ -102,7 +102,7 @@ function Projects(): JSX.Element {
             setShowForm(false);
             setEditingId(null);
             fetchProjects();
-        } catch (err) {
+        } catch {
             addToast("Failed to save project", "error");
         } finally {
             setSubmitting(false);
@@ -131,7 +131,7 @@ function Projects(): JSX.Element {
             if (error) throw error;
             addToast("Project deleted", "success");
             fetchProjects();
-        } catch (err) {
+        } catch {
             addToast("Failed to delete project", "error");
         } finally {
             setDeleteTargetId(null);

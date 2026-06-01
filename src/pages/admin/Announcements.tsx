@@ -43,10 +43,8 @@ function AdminAnnouncements(): JSX.Element {
 
       if (error) throw error;
       setAnnouncements((data || []) as Announcement[]);
-    } catch (err) {
-     
+    } catch {
     } finally {
-     
       const elapsed = Date.now() - startTime;
       const remaining = Math.max(0, 3000 - elapsed);
       setTimeout(() => {
@@ -66,11 +64,9 @@ function AdminAnnouncements(): JSX.Element {
     try {
       setSubmitting(true);
 
-     
       const { data: { user } } = await supabase.auth.getUser();
 
       if (editingAnnouncement) {
-       
         const { error } = await supabase
           .from("announcements")
           .update({ message: message.trim() })
@@ -83,7 +79,6 @@ function AdminAnnouncements(): JSX.Element {
         addToast("Announcement updated successfully!", "success");
         fetchAnnouncements();
       } else {
-      
         const { error } = await supabase.from("announcements").insert([{
           message: message.trim(),
           created_by: user?.id
@@ -95,7 +90,7 @@ function AdminAnnouncements(): JSX.Element {
         addToast("Announcement posted successfully!", "success");
         fetchAnnouncements();
       }
-    } catch (err) {
+    } catch {
       addToast(editingAnnouncement ? "Failed to update announcement" : "Failed to post announcement", "error");
     } finally {
       setSubmitting(false);
@@ -117,7 +112,7 @@ function AdminAnnouncements(): JSX.Element {
       if (error) throw error;
       addToast("Announcement deleted", "success");
       fetchAnnouncements();
-    } catch (err) {
+    } catch {
       addToast("Failed to delete announcement", "error");
     } finally {
       setConfirmTargetId(null);
@@ -134,9 +129,7 @@ function AdminAnnouncements(): JSX.Element {
   const cancelEdit = (): void => {
     setEditingAnnouncement(null);
     setMessage("");
-  }; 
-
-  
+  };
   const postFundUpdate = async (): Promise<void> => {
     try {
       const { data: txnData } = await supabase
@@ -149,40 +142,35 @@ function AdminAnnouncements(): JSX.Element {
         if (txn.type === "debit") balance -= Number(txn.amount);
       });
 
-     
       const { data: { user } } = await supabase.auth.getUser();
 
       const msg = `Fund Update: Our current total fund stands at ₹${balance.toLocaleString()}`;
 
-      const { error } = await supabase.from("announcements").insert([{ 
+      const { error } = await supabase.from("announcements").insert([{
         message: msg,
         created_by: user?.id
       }]);
-      
       if (error) throw error;
       addToast("Fund update posted!", "success");
       fetchAnnouncements();
-    } catch (err) {
+    } catch {
       addToast("Failed to post fund update", "error");
     }
   };
 
   return (
     <AdminLayout>
-    
       <div style={headerSection}>
         <div>
           <h1 style={pageTitle}>Announcements</h1>
           <p style={pageSubtitle}>Communicate with your users</p>
         </div>
       </div>
-
-      
       <div style={{ ...themeCard, marginBottom: spacing.lg }}>
         <h3 style={formTitle}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
+            <line x1="12" y1="5" x2="12" y2="19" />
+            <line x1="5" y1="12" x2="19" y2="12" />
           </svg>
           {editingAnnouncement ? "Edit Announcement" : "Post New Announcement"}
         </h3>
@@ -203,25 +191,23 @@ function AdminAnnouncements(): JSX.Element {
 
             <button type="submit" disabled={submitting} style={{ ...primaryBtn, opacity: submitting ? 0.7 : 1 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="22" y1="2" x2="11" y2="13"/>
-                <polygon points="22 2 15 22 11 13 2 9 22 2"/>
+                <line x1="22" y1="2" x2="11" y2="13" />
+                <polygon points="22 2 15 22 11 13 2 9 22 2" />
               </svg>
               {submitting ? (editingAnnouncement ? "Saving..." : "Posting...") : (editingAnnouncement ? "Save Changes" : "Post Announcement")}
             </button>
 
             <button type="button" onClick={postFundUpdate} style={fundUpdateBtn}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none">
-                <rect x="3" y="14" width="4" height="7" rx="1" fill="currentColor"/>
-                <rect x="10" y="8" width="4" height="13" rx="1" fill="currentColor"/>
-                <rect x="17" y="3" width="4" height="18" rx="1" fill="currentColor"/>
+                <rect x="3" y="14" width="4" height="7" rx="1" fill="currentColor" />
+                <rect x="10" y="8" width="4" height="13" rx="1" fill="currentColor" />
+                <rect x="17" y="3" width="4" height="18" rx="1" fill="currentColor" />
               </svg>
               Post Fund Update
             </button>
           </div>
         </form>
       </div>
-
-    
       <div>
         <h3 style={sectionTitle}>All Announcements</h3>
 
@@ -230,8 +216,8 @@ function AdminAnnouncements(): JSX.Element {
         ) : announcements.length === 0 ? (
           <div style={emptyState}>
             <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke={colors.textMuted} strokeWidth="1.5">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" />
+              <path d="M13.73 21a2 2 0 0 1-3.46 0" />
             </svg>
             <p style={emptyTitle}>No announcements yet</p>
             <p style={emptySubtitle}>Post your first announcement above</p>
@@ -259,15 +245,15 @@ function AdminAnnouncements(): JSX.Element {
                 <div style={actionBtns}>
                   <button onClick={() => handleEdit(ann)} style={iconBtn} title="Edit">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                      <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
                     </svg>
                   </button>
 
                   <button onClick={() => handleDelete(ann.id, ann.message)} style={{ ...iconBtn, color: colors.accentRed }} title="Delete">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <polyline points="3 6 5 6 21 6"/>
-                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                      <polyline points="3 6 5 6 21 6" />
+                      <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
                     </svg>
                   </button>
                 </div>
@@ -291,7 +277,7 @@ function AdminAnnouncements(): JSX.Element {
         </div>
       )}
 
-    </AdminLayout> 
+    </AdminLayout>
   );
 }
 
