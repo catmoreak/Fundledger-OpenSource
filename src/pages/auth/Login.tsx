@@ -316,7 +316,7 @@ const Login: FC = () => {
         </Link>
       </div>
 
-      <p style={footerText}>Transparent finances for your organization</p>
+      <p style={footerText}>Managing finaces made simple </p>
     </div>
   );
 };

@@ -83,7 +83,7 @@ function AdminSidebar() {
           gap: "12px"
         }}>
           <img
-            src="/logo2.png"
+            src="/logo.png"
             alt="FundLedger Logo"
             style={{ width: "40px", height: "40px", borderRadius: borderRadius.md, objectFit: "cover" }}
           />
