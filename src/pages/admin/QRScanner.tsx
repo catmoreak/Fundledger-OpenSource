@@ -24,7 +24,6 @@ function AdminQRScanner(): JSX.Element {
       setError(null);
       setTxn(null);
       setScanning(false);
-
       let txnData: { txn_id?: string } | null;
       try {
         txnData = JSON.parse(decodedText);
@@ -44,7 +43,6 @@ function AdminQRScanner(): JSX.Element {
         setError("Invalid or unknown transaction QR");
         return;
       }
-
       const payload = JSON.stringify({
         txn_id: data.txn_id,
         title: data.title,

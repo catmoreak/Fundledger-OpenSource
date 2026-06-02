@@ -48,7 +48,7 @@ function Projects(): JSX.Element {
             if (error) throw error;
             setProjects(data || []);
         } catch {
-            // Ignore error
+            
         } finally {
            
             const elapsed = Date.now() - startTime;
