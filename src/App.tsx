@@ -11,6 +11,15 @@ import { ToastProvider, useToast } from './context/ToastContext'
 import { AuthProvider } from './context/AuthContext'
 import { ToastContainer } from './components/Toast'
 
+
+import AdminHome from './pages/admin/AdminHome'
+import AdminAnnouncements from './pages/admin/Announcements'
+import Projects from './pages/admin/Projects'
+import AdminQRScanner from './pages/admin/QRScanner'
+import AdminTransactions from './pages/admin/Transactions.tsx'
+import AdminGrants from './pages/admin/Grants.tsx'
+import { AdminRoute } from './components/ProtectedRoute'
+
 function AppContent() {
   const { toasts, removeToast } = useToast();
   
@@ -25,6 +34,39 @@ function AppContent() {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/request-grant" element={<RequestGrant />} />
           <Route path="/scan" element={<QrScanner />} />
+          
+          
+          <Route path="/admin" element={
+            <AdminRoute>
+              <AdminHome />
+            </AdminRoute>
+          } />
+          <Route path="/admin/announcements" element={
+            <AdminRoute>
+              <AdminAnnouncements />
+            </AdminRoute>
+          } />
+          <Route path="/admin/projects" element={
+            <AdminRoute>
+              <Projects />
+            </AdminRoute>
+          } />
+          <Route path="/admin/scan" element={
+            <AdminRoute>
+              <AdminQRScanner />
+            </AdminRoute>
+          } />
+          <Route path="/admin/transactions" element={
+            <AdminRoute>
+              <AdminTransactions />
+            </AdminRoute>
+          } />
+          <Route path="/admin/grants" element={
+            <AdminRoute>
+              <AdminGrants />
+            </AdminRoute>
+          } />
+
           <Route path="/" element={<Login />} />
         </Routes>
       </Router>
