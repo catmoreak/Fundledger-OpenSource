@@ -2,25 +2,29 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { useToast } from "../context/ToastContext";
 import { colors, borderRadius } from "../styles/theme";
-import { type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
+import { Spinner } from "./Spinner";
 
 function AdminSidebar() {
   const location = useLocation();
   const navigate = useNavigate();
   const { signOut } = useAuth();
   const { addToast } = useToast();
+  const [isSigningOut, setIsSigningOut] = useState(false);
 
   const isActive = (path: string) => location.pathname === path;
 
   const handleLogout = async () => {
+    if (isSigningOut) return;
     try {
-      await signOut();
+      setIsSigningOut(true);
       addToast("Signed out successfully", "success");
-      setTimeout(() => {
-        navigate("/home");
-      }, 100);
+      navigate("/home");
+      await signOut();
     } catch (err) {
       navigate("/home");
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
@@ -57,7 +61,29 @@ function AdminSidebar() {
   const QRIcon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>;
 
   return (
-    <aside style={{
+    <>
+      {isSigningOut && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          background: "rgba(11, 14, 20, 0.8)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}>
+          <Spinner size={50} color={colors.accentGreen} />
+          <p style={{ marginTop: 16, color: colors.textPrimary, fontSize: 16, fontWeight: 500 }}>
+            Logging out...
+          </p>
+        </div>
+      )}
+      <aside style={{
       width: "280px",
       height: "100vh",
       position: "fixed",
@@ -154,6 +180,7 @@ function AdminSidebar() {
         Logout
       </button>
     </aside>
+    </>
   );
 }
 
