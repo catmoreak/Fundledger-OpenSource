@@ -3,6 +3,7 @@ import { useAuth } from "../context/AuthContext";
 import { useState, type MouseEvent, type ReactNode } from "react";
 import { useToast } from "../context/ToastContext";
 import { colors, borderRadius } from "../styles/theme";
+import { Spinner } from "./Spinner";
 
 function UserSidebar() {
   const location = useLocation();
@@ -55,15 +56,13 @@ function UserSidebar() {
     
     try {
       setIsSigningOut(true);
-      await signOut();
       addToast("Signed out successfully", "success");
-      setTimeout(() => {
-        navigate("/home");
-        setIsSigningOut(false);
-      }, 100);
-    } catch (_err: unknown) {
-      setIsSigningOut(false);
       navigate("/home");
+      await signOut();
+    } catch (_err: unknown) {
+      navigate("/home");
+    } finally {
+      setIsSigningOut(false);
     }
   };
 
@@ -75,7 +74,29 @@ function UserSidebar() {
   const QRIcon = <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect></svg>;
 
   return (
-    <aside style={{
+    <>
+      {isSigningOut && (
+        <div style={{
+          position: "fixed",
+          top: 0,
+          left: 0,
+          width: "100vw",
+          height: "100vh",
+          background: "rgba(11, 14, 20, 0.8)",
+          backdropFilter: "blur(8px)",
+          display: "flex",
+          flexDirection: "column",
+          justifyContent: "center",
+          alignItems: "center",
+          zIndex: 9999,
+        }}>
+          <Spinner size={50} color={colors.accentGreen} />
+          <p style={{ marginTop: 16, color: colors.textPrimary, fontSize: 16, fontWeight: 500 }}>
+            Signing out...
+          </p>
+        </div>
+      )}
+      <aside style={{
       width: "280px",
       height: "100vh",
       position: "fixed",
@@ -149,7 +170,6 @@ function UserSidebar() {
         
         {user ? (
           <>
-          
             {showProfileMenu && (
               <div style={{
                 position: "absolute",
@@ -164,14 +184,14 @@ function UserSidebar() {
                 boxShadow: "0 4px 20px rgba(0,0,0,0.3)",
                 zIndex: 200,
               }}>
-               
-                <div style={{ 
+
+                <div style={{
                   padding: "8px 16px",
                   marginBottom: "4px"
                 }}>
-                  <span style={{ 
-                    fontSize: "11px", 
-                    fontWeight: 500, 
+                  <span style={{
+                    fontSize: "11px",
+                    fontWeight: 500,
                     color: colors.textMuted,
                     textTransform: "uppercase",
                     letterSpacing: "0.5px"
@@ -179,8 +199,6 @@ function UserSidebar() {
                     Account
                   </span>
                 </div>
-                
-               
                 <Link
                   to="/settings"
                   onClick={() => setShowProfileMenu(false)}
@@ -209,7 +227,6 @@ function UserSidebar() {
                   Settings
                 </Link>
 
-              
                 <button
                   onClick={() => {
                     setShowProfileMenu(false);
@@ -251,12 +268,11 @@ function UserSidebar() {
               </div>
             )}
 
-          
-            <div 
+            <div
               onClick={() => setShowProfileMenu((prev) => !prev)}
-              style={{ 
-                display: "flex", 
-                alignItems: "center", 
+              style={{
+                display: "flex",
+                alignItems: "center",
                 gap: "12px",
                 padding: "12px 16px",
                 cursor: "pointer",
@@ -285,9 +301,9 @@ function UserSidebar() {
                 { (profile?.name || user.email || 'U').toString().charAt(0).toUpperCase() }
               </div>
               <div style={{ flex: 1, overflow: "hidden" }}>
-                <p style={{ 
-                  color: colors.textPrimary, 
-                  fontSize: "14px", 
+                <p style={{
+                  color: colors.textPrimary,
+                  fontSize: "14px",
                   fontWeight: 500,
                   margin: 0,
                   whiteSpace: "nowrap",
@@ -296,9 +312,9 @@ function UserSidebar() {
                 }}>
                   {profile?.name || user.user_metadata?.full_name || user.email?.split('@')[0] || 'User'}
                 </p>
-                <p style={{ 
-                  color: colors.textMuted, 
-                  fontSize: "12px", 
+                <p style={{
+                  color: colors.textMuted,
+                  fontSize: "12px",
                   margin: 0,
                   whiteSpace: "nowrap",
                   overflow: "hidden",
@@ -341,6 +357,7 @@ function UserSidebar() {
         )}
       </div>
     </aside>
+    </>
   );
 }
 

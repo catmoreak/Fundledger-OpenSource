@@ -296,15 +296,20 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signingOutRef.current = true;
 
     try {
-      const { error } = await supabase.auth.signOut();
-      if (!error) {
-        setUser(null);
-        setRole(null);
-        setProfile(null);
+      if (user) {
+        try {
+          localStorage.removeItem(`hcb-role-${user.id}`);
+        } catch (_err) {
+       
+        }
       }
+      await supabase.auth.signOut();
     } catch (_error) {
-     
+      console.warn("[Auth] Supabase signOut error caught:", _error);
     } finally {
+      setUser(null);
+      setRole(null);
+      setProfile(null);
       signingOutRef.current = false;
     }
   };
