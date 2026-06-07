@@ -57,10 +57,10 @@ function UserSidebar() {
     try {
       setIsSigningOut(true);
       addToast("Signed out successfully", "success");
-      navigate("/home");
+      navigate("/login");
       await signOut();
     } catch (_err: unknown) {
-      navigate("/home");
+      navigate("/login");
     } finally {
       setIsSigningOut(false);
     }

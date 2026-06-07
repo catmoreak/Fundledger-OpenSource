@@ -19,15 +19,14 @@ function AdminSidebar() {
     try {
       setIsSigningOut(true);
       addToast("Signed out successfully", "success");
-      navigate("/home");
+      navigate("/login");
       await signOut();
     } catch (err) {
-      navigate("/home");
+      navigate("/login");
     } finally {
       setIsSigningOut(false);
     }
   };
-
   const navItem = (path: string, label: string, icon: ReactNode) => (
     <Link
       to={path}
