@@ -7,6 +7,7 @@ import Announcements from './pages/user/Announcement'
 import Transactions from './pages/user/Transactions'
 import RequestGrant from './pages/user/RequestGrant'
 import QrScanner from './pages/user/QrScanner'
+import Settings from './pages/user/Settings.tsx'
 import { ToastProvider, useToast } from './context/ToastContext'
 import { AuthProvider } from './context/AuthContext'
 import { ToastContainer } from './components/Toast'
@@ -22,7 +23,6 @@ import { AdminRoute } from './components/ProtectedRoute'
 
 function AppContent() {
   const { toasts, removeToast } = useToast();
-  
   return (
     <>
       <Router>
@@ -34,8 +34,9 @@ function AppContent() {
           <Route path="/transactions" element={<Transactions />} />
           <Route path="/request-grant" element={<RequestGrant />} />
           <Route path="/scan" element={<QrScanner />} />
-          
-          
+          <Route path="/settings" element={<Settings />} />
+
+
           <Route path="/admin" element={
             <AdminRoute>
               <AdminHome />
