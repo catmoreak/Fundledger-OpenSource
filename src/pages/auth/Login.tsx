@@ -136,7 +136,8 @@ const Login: FC = () => {
 
         <h2 style={titleStyle}>Welcome back</h2>
         <p style={subtitleStyle}>Sign in to your account to continue</p>
-
+       <p style={subtitleStyle}>For <b>User login</b> - Use <b>tester@gmail.com</b> and password -<b>tester123</b> </p>
+        <p style={subtitleStyle}>For <b>Admin login</b> - Use <b>admin@gmail.com</b> and password - <b>admin123</b></p>
         {error && (
           <div style={errorBox}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" style={{ flexShrink: 0 }}>
