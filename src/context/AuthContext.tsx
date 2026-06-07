@@ -79,40 +79,95 @@ export function AuthProvider({ children }: AuthProviderProps) {
     const doFetch = async (attemptAllowed: number = maxRetries): Promise<void> => {
       let attempt = 0;
 
-      while (attempt <= attemptAllowed && isMounted()) {
-        try {
-          const timeoutPromise = new Promise<never>((_, reject) =>
-            setTimeout(() => reject(new Error("Timeout")), timeoutMs),
-          );
+      try {
+        while (attempt <= attemptAllowed && isMounted()) {
+          try {
+            const timeoutPromise = new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error("Timeout")), timeoutMs),
+            );
 
-          const fetchPromise = supabase
-            .from("profiles")
-            .select("role, name")
-            .eq("id", userId)
-            .single();
+            const fetchPromise = supabase
+              .from("profiles")
+              .select("role, name")
+              .eq("id", userId)
+              .single();
 
-          const result = (await Promise.race([fetchPromise, timeoutPromise])) as {
-            data: ProfileRow | null;
-            error: SupabaseQueryError | null;
-          };
+            const result = (await Promise.race([fetchPromise, timeoutPromise])) as {
+              data: ProfileRow | null;
+              error: SupabaseQueryError | null;
+            };
 
-          const { data, error } = result;
+            const { data, error } = result;
 
-          if (error) {
-            if (error.message?.includes("AbortError") || error.details?.includes("AbortError")) {
-              return;
-            }
+            if (error) {
+              if (error.message?.includes("AbortError") || error.details?.includes("AbortError")) {
+                return;
+              }
 
-            if (error.status && error.status >= 400 && error.status < 500) {
-              console.warn("[Auth] fetchUserRole client error (no retry)", { status: error.status, message: error.message });
+              if (error.status && error.status >= 400 && error.status < 500) {
+                console.warn("[Auth] fetchUserRole client error (no retry)", { status: error.status, message: error.message });
+                if (isMounted() && !hasValidCache) {
+                  setRole(null);
+                  setRoleError(error.message || "Client error fetching role");
+                }
+                return;
+              }
+
+              if (error.message === "Timeout") {
+                if (attempt < attemptAllowed) {
+                  attempt += 1;
+                  await new Promise((resolve) => setTimeout(resolve, 250));
+                  continue;
+                }
+                if (isMounted() && !hasValidCache) {
+                  setRole(null);
+                  setRoleError("Timeout while fetching role");
+                }
+                return;
+              }
+
+              console.warn("[Auth] fetchUserRole error, attempt", attempt, error);
+              console.error("[Auth] fetchUserRole error details", {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                status: error.status,
+              });
+
+              if (attempt < attemptAllowed) {
+                attempt += 1;
+                await new Promise((resolve) => setTimeout(resolve, 250));
+                continue;
+              }
+
               if (isMounted() && !hasValidCache) {
                 setRole(null);
-                setRoleError(error.message || "Client error fetching role");
+                setRoleError(error.message || "Unknown error fetching role");
               }
               return;
             }
 
-            if (error.message === "Timeout") {
+            if (isMounted()) {
+              console.debug("[Auth] fetchUserRole success", { role: data?.role, name: data?.name });
+              setRole(data?.role ?? null);
+              setProfile({ name: data?.name ?? null });
+              setRoleError(null);
+
+              try {
+                localStorage.setItem(ROLE_CACHE_KEY(userId), JSON.stringify({ role: data?.role ?? null, ts: Date.now() }));
+              } catch (_error) {
+              
+              }
+            }
+            break;
+          } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : String(error);
+
+            if (message.includes("AbortError")) {
+              return;
+            }
+
+            if (message === "Timeout") {
               if (attempt < attemptAllowed) {
                 attempt += 1;
                 await new Promise((resolve) => setTimeout(resolve, 250));
@@ -122,15 +177,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
                 setRole(null);
                 setRoleError("Timeout while fetching role");
               }
-              return;
+              break;
             }
 
-            console.warn("[Auth] fetchUserRole error, attempt", attempt, error);
-            console.error("[Auth] fetchUserRole error details", {
-              message: error.message,
-              details: error.details,
-              hint: error.hint,
-              status: error.status,
+            console.warn("[Auth] fetchUserRole unexpected error, attempt", attempt, error);
+            console.error("[Auth] fetchUserRole unexpected error details", {
+              message,
+              stack: error instanceof Error ? error.stack : undefined,
             });
 
             if (attempt < attemptAllowed) {
@@ -141,64 +194,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
             if (isMounted() && !hasValidCache) {
               setRole(null);
-              setRoleError(error.message || "Unknown error fetching role");
-            }
-            return;
-          }
-
-          if (isMounted()) {
-            console.debug("[Auth] fetchUserRole success", { role: data?.role, name: data?.name });
-            setRole(data?.role ?? null);
-            setProfile({ name: data?.name ?? null });
-            setRoleError(null);
-
-            try {
-              localStorage.setItem(ROLE_CACHE_KEY(userId), JSON.stringify({ role: data?.role ?? null, ts: Date.now() }));
-            } catch (_error) {
-           
-            }
-          }
-          break;
-        } catch (error: unknown) {
-          const message = error instanceof Error ? error.message : String(error);
-
-          if (message.includes("AbortError")) {
-            return;
-          }
-
-          if (message === "Timeout") {
-            if (attempt < attemptAllowed) {
-              attempt += 1;
-              await new Promise((resolve) => setTimeout(resolve, 250));
-              continue;
-            }
-            if (isMounted() && !hasValidCache) {
-              setRole(null);
-              setRoleError("Timeout while fetching role");
             }
             break;
           }
-
-          console.warn("[Auth] fetchUserRole unexpected error, attempt", attempt, error);
-          console.error("[Auth] fetchUserRole unexpected error details", {
-            message,
-            stack: error instanceof Error ? error.stack : undefined,
-          });
-
-          if (attempt < attemptAllowed) {
-            attempt += 1;
-            await new Promise((resolve) => setTimeout(resolve, 250));
-            continue;
-          }
-
-          if (isMounted() && !hasValidCache) {
-            setRole(null);
-          }
-          break;
         }
+      } finally {
+        if (isMounted() && !hasValidCache) setRoleLoading(false);
       }
-
-      if (isMounted() && !hasValidCache) setRoleLoading(false);
     };
 
     if (hasValidCache) {
@@ -297,16 +299,27 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     try {
       if (user) {
-        try {
-          localStorage.removeItem(`hcb-role-${user.id}`);
-        } catch (_err) {
-       
-        }
+        localStorage.removeItem(`hcb-role-${user.id}`);
       }
-      await supabase.auth.signOut();
+    } catch (_err) {
+
+    }
+
+    setUser(null);
+    setRole(null);
+    setProfile(null);
+
+    try {
+    
+      const signOutPromise = supabase.auth.signOut();
+      const timeoutPromise = new Promise<void>((_, reject) =>
+        setTimeout(() => reject(new Error("Supabase signOut timeout")), 1500)
+      );
+      await Promise.race([signOutPromise, timeoutPromise]);
     } catch (_error) {
-      console.warn("[Auth] Supabase signOut error caught:", _error);
+      console.warn("[Auth] Supabase signOut error or timeout caught:", _error);
     } finally {
+  
       setUser(null);
       setRole(null);
       setProfile(null);
